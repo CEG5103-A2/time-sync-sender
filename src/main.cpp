@@ -3,6 +3,11 @@
  * @author Samuel Yow
  * @date 2025-03-17
  * @brief POC time synchronization device
+ * 
+ * Based on:
+ * S. Ganeriwal, R. Kumar, and M. B. Srivastava, “Timing-sync protocol for sensor networks,” 
+ * in Proc. 1st Int. Conf. Embedded Networked Sensor Syst. (SenSys ’03), 2003, pp. 138–149.
+ * 
  */
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
@@ -11,19 +16,14 @@
 #include <esp_wifi.h>
 #include <esp_now.h>
 
+// The mode of the node, SENDER syncs its clock to the receiver
 enum CurrentMode{
     SENDER = 0,
     RECEIVER = 1,
     NONE = 2,
 };
 
-//State machine to represent the current state //TODO
-enum CurrentState{
-    BROADCASTING = 0,
-    WAITING_REPLY = 1,
-    MQTT = 2
-};
-
+//Double used for high accuracy calcations, and to allow for singed calculations
 typedef struct timing_messaage{
     double t1; //Sender Timestamp A->B
     double t2; //Receiver recv Timestamp
@@ -42,11 +42,9 @@ CurrentMode g_node_mode;
 Timing_Message esp_now_data;
 esp_now_peer_info_t peerInfo;
 
-
 CurrentMode check_sender_recv();
+
 bool init_esp_now();
-
-
 void cb_on_espnow_recv(const uint8_t * mac, const uint8_t *incomingData, int len);
 bool send_esp_now_data();
 
